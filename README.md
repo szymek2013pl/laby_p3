@@ -355,3 +355,197 @@ dotnet build
 ```
 
 Dzięki `dotnet CLI` cały proces tworzenia, budowania, testowania i uruchamiania wieloprojektowej aplikacji .NET można wykonać bezpośrednio z poziomu terminala.
+
+# Konfiguracja klucza SSH dla GitHub
+
+Klucz SSH pozwala na bezpieczne łączenie się z GitHubem bez konieczności podawania loginu i hasła przy każdej operacji `git push` lub `git pull`.
+
+## 1. Generowanie klucza SSH
+
+Otwórz terminal i wykonaj polecenie:
+
+```bash
+ssh-keygen -t ed25519 -C "twój_email@gmail.com"
+```
+
+Zastąp `twój_email@gmail.com` adresem e-mail powiązanym z Twoim kontem GitHub.
+
+Po wykonaniu polecenia pojawią się pytania dotyczące:
+
+* lokalizacji zapisu klucza,
+* hasła (`passphrase`).
+
+Jeżeli chcesz użyć domyślnej lokalizacji i nie potrzebujesz hasła, możesz kilkukrotnie nacisnąć **Enter**.
+
+Domyślna lokalizacja klucza na Windowsie to:
+
+```text
+C:\Users\NazwaUzytkownika\.ssh\
+```
+
+Zostaną utworzone dwa pliki:
+
+```text
+id_ed25519       # klucz prywatny
+id_ed25519.pub   # klucz publiczny
+```
+
+> **⚠️ Ważne:** nigdy nie udostępniaj pliku `id_ed25519`. Jest to Twój **klucz prywatny**. Na GitHub dodajesz wyłącznie zawartość pliku `id_ed25519.pub`.
+
+---
+
+## 2. Wyświetlenie klucza publicznego
+
+Po wygenerowaniu klucza należy wyświetlić jego zawartość i skopiować ją do GitHuba.
+
+### PowerShell
+
+W PowerShellu możesz użyć:
+
+```powershell
+cat ~/.ssh/id_ed25519.pub
+```
+
+Alternatywnie:
+
+```powershell
+Get-Content ~/.ssh/id_ed25519.pub
+```
+
+### Windows CMD
+
+W klasycznym Wierszu Polecenia (`cmd`) użyj:
+
+```cmd
+type %USERPROFILE%\.ssh\id_ed25519.pub
+```
+
+Polecenie wyświetli klucz publiczny w terminalu.
+
+Powinien on wyglądać mniej więcej tak:
+
+```text
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... twój_email@gmail.com
+```
+
+Skopiuj **całą linię**, zaczynającą się od:
+
+```text
+ssh-ed25519
+```
+
+---
+
+## 3. Dodanie klucza do GitHuba
+
+1. Zaloguj się na swoje konto GitHub.
+
+2. Przejdź do:
+
+   **Settings → SSH and GPG keys**
+
+3. Kliknij:
+
+   **New SSH key**
+
+4. W polu **Title** wpisz nazwę pozwalającą rozpoznać urządzenie, np.:
+
+   ```text
+   Mój komputer
+   ```
+
+5. W polu **Key** wklej wcześniej skopiowany klucz publiczny.
+
+6. Kliknij **Add SSH key**.
+
+> Do GitHuba wklejamy zawartość pliku `id_ed25519.pub`, a **nie** `id_ed25519`.
+
+---
+
+## 4. Sprawdzenie połączenia z GitHubem
+
+Po dodaniu klucza możesz sprawdzić, czy SSH działa poprawnie:
+
+```bash
+ssh -T git@github.com
+```
+
+Przy pierwszym połączeniu może pojawić się pytanie o potwierdzenie autentyczności hosta. Wpisz:
+
+```text
+yes
+```
+
+Jeżeli konfiguracja jest poprawna, GitHub powinien potwierdzić, że uwierzytelnił Twoje konto.
+
+---
+
+## 5. Klonowanie repozytorium przez SSH
+
+Po skonfigurowaniu SSH możesz klonować repozytoria za pomocą adresu SSH:
+
+```bash
+git clone git@github.com:USERNAME/REPOSITORY.git
+```
+
+Przykład:
+
+```bash
+git clone git@github.com:username/moj-projekt.git
+```
+
+Zamiast adresu HTTPS:
+
+```text
+https://github.com/username/moj-projekt.git
+```
+
+możesz używać:
+
+```text
+git@github.com:username/moj-projekt.git
+```
+
+---
+
+## Podsumowanie
+
+Cały proces wygląda następująco:
+
+```text
+1. Wygeneruj klucz
+        │
+        ▼
+ssh-keygen -t ed25519 -C "twój_email@gmail.com"
+        │
+        ▼
+2. Wyświetl klucz publiczny
+        │
+        ▼
+cat ~/.ssh/id_ed25519.pub
+        │
+        ▼
+3. Skopiuj zawartość id_ed25519.pub
+        │
+        ▼
+4. GitHub → Settings → SSH and GPG keys
+        │
+        ▼
+5. New SSH key
+        │
+        ▼
+6. Wklej klucz
+        │
+        ▼
+7. Sprawdź połączenie
+        │
+        ▼
+ssh -T git@github.com
+```
+
+### Najważniejsza zasada
+
+```text
+id_ed25519       → 🔒 KLUCZ PRYWATNY → NIGDY NIE UDOSTĘPNIAJ
+id_ed25519.pub   → 🔑 KLUCZ PUBLICZNY → DODAJ DO GITHUBA
+```
